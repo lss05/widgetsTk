@@ -7,9 +7,9 @@ from calendar import Calendar,month
 from time import strftime
 #from datetime import timedelta
 
-class FrmCalendar(BaseToplevel):
+class Datedatapicker(BaseToplevel):
     def __init__(self,root,varstring,force_data_output:bool,*args,**kwargs):
-        super(FrmCalendar,self).__init__(root,*args,**kwargs)
+        super(Datedatapicker,self).__init__(root,*args,**kwargs)
         self.geometry("304x400")
         self.d = (304,400)
         self.cordabarra = "white"

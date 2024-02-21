@@ -1,5 +1,5 @@
 from tkinter import *
-from m_calendario import FrmCalendar
+from m_calendario import Datedatapicker
 
 
 
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     s = StringVar(root,value="")
     lbldata = Label(root,text="",textvariable=s,width=25,bd=1,relief=SOLID)
     lbldata.pack()
-    toplevel = FrmCalendar(root,s,True) # s==StringVar, True== Força saida de dados caso usuario não escolha data.
+    toplevel = Datedatapicker(root,s,True) # s==StringVar, True== Força saida de dados caso usuario não escolha data.
 
     #Canvas gradiente
     
