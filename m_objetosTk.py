@@ -4,6 +4,7 @@ from m_constantesP_objetos import *
 from datetime import date
 from time import strftime
 from calendar import Calendar
+from m_treewidgets import TreeRows
 
 class BaseToplevel(Toplevel):
     def __init__(self,root,cnxBD=None,logo="",modo="add",titulojanela="",namebtnCadclient="Registrar Cliente",dimensao=(750,550),imglogo=IMG_LOGO_128X128B,**kwargs) -> None:
@@ -433,3 +434,27 @@ class FrmLabelCalendar(Frame):
         self.btndata.pack(side=RIGHT,expand=True,fill=X,padx=("2px","2px"),pady=("2px","2px"))
     def getdata(self):
         return self.vardata.get()
+class EntPlaceHold(Entry):
+    def __init__(self, master=None, placeholder="Texto padrão", color='gray30'):
+        super().__init__(master)
+
+        self.placeholder = placeholder
+        self.placeholder_color = color
+        self.default_fg_color = self['fg']
+
+        self.bind("<FocusIn>", self.foc_in)
+        self.bind("<FocusOut>", self.foc_out)
+
+        self.put_placeholder()
+    def put_placeholder(self):
+        self.insert(0, self.placeholder)
+        self['fg'] = self.placeholder_color
+    def foc_in(self, *args):
+        if self['fg'] == self.placeholder_color:
+            self.delete('0', 'end')
+            self['fg'] = self.default_fg_color
+    def foc_out(self, *args):
+        if not self.get():
+            self.put_placeholder()
+
+
