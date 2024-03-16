@@ -1,5 +1,3 @@
-from tkinter import *
-
 class F_Auxiliares():
     def __init__(self, janela=None):
         self.janelaPai = janela

@@ -445,7 +445,8 @@ class TreeRows:
         width_ = int(self.frmScroll.cvs["width"])
         width_ = width_ + width
         self.frmScroll.cvs.configure(width=width_)
-    
+    def contitems(self) ->int:
+        return len(self.frmScroll.conteiner.winfo_children())
 if __name__ == "__main__":
     def removeitem(item):
         try:

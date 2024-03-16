@@ -1,28 +1,32 @@
 from tkinter import *
+import sys
+
+sys.path.append("./p_objetosTk")
+
 from Funcoes_Auxiliares import F_Auxiliares
 from m_constantesP_objetos import *
 from datetime import date
 from time import strftime
 from calendar import Calendar
 from m_treewidgets import TreeRows
+from masked_all_v2_0_7_final import Masked_all
+from masked_money_2_0_3 import MoneyMasked
+from m_radiobutton import FrmRadioBtn
+
 
 class BaseToplevel(Toplevel):
-    def __init__(self,root,cnxBD=None,logo="",modo="add",titulojanela="",namebtnCadclient="Registrar Cliente",dimensao=(750,550),imglogo=IMG_LOGO_128X128B,**kwargs) -> None:
+    def __init__(self,root,titulojanela="",dimensao=(750,550),**kwargs) -> None:
         super(BaseToplevel,self).__init__(root,**kwargs)
-        self.logo128x128 = logo
         self.root = root
-        self.cnxBD = cnxBD
         self.d = dimensao
-        self.modo = modo
         self.titulojanela = titulojanela
-        self.imglogo = imglogo
         self.func = F_Auxiliares(self)
         self.geometry(self.func.disposicao_janela(self.d))
 
         self["background"] = '#000fff000' # "#4682B4"
         self.protocol("WM_DELETE_WINDOW",self.destroy_)
-        self.nomebtnCadastrarPessoa = namebtnCadclient
         self.overrideredirect(True)
+        self.criarwidgets()
         self.propagate(False)
         self.grab_set()
     def to_overrideredirect(self,event=None):
@@ -38,11 +42,8 @@ class BaseToplevel(Toplevel):
         self.destroy()
     def criarwidgets(self):
         #self.bind("<Map>",self.to_overrideredirect)
-        self.frmTOP = Frame(self,background="#4682B4",bd="0p",height="18p",relief=SOLID) # #4682B4   "#00FFFF"
+        self.frmTOP = Frame(self,bg="#4682B4",bd="0p",height="18p",relief=SOLID) # #4682B4   "#00FFFF"
         self.frmTOP.pack(side=TOP,fill=X,pady=("0p","2p"),ipadx="0p")
-        
-        self.frmTOP.bind("<Button-1>",self.pressedStart)
-        self.frmTOP.bind("<B1-Motion>",lambda e: self.movetomouse(e,self.d))
 
         self.img_close = PhotoImage(data=IMG_CLOSE_32X32)
         self.btnClose = Button(self.frmTOP,text="Fechar",width=32,height=32,relief=SOLID,bd="0p",command=self.destroy_,image=self.img_close,background="#4682B4")
@@ -52,24 +53,33 @@ class BaseToplevel(Toplevel):
         self.btnminimizar = Button(self.frmTOP,width=32,height=32,relief=SOLID,bd="0p",command=lambda : self.minimizar() ,image=self.img_minimizar,background="#4682B4")
         self.btnminimizar.pack(side=RIGHT,padx=("5p","5p"),pady=("5p","5p"))
 
-        self.frmlogo = Frame(self,background="white",border="0p",height="300p",relief=SOLID)
-        self.frmlogo.pack(side=TOP,fill=X,pady=("0p","0p"),ipady=0)
+        self.frmtitle = Frame(self.frmTOP,background=self.frmTOP["bg"],border="0p",relief=SOLID)
+        self.frmtitle.pack(side=TOP,fill=BOTH,expand=True)
 
-        self.imgLogo = PhotoImage(data=self.imglogo,width=128)
-        self.lblimgLogo = Label(self.frmlogo, height=128,image=self.imgLogo,justify=LEFT,background="white",relief=SOLID,bd="0p")
-        self.lblimgLogo.pack(side=LEFT,expand=True,pady="10p")
+        font_ = ("Aharoni",12,"bold")
+        self.lblLogo = Label(self.frmtitle, text=self.titulojanela,relief=SOLID,justify=CENTER,bg=self.frmTOP["bg"],font=font_,fg="white",bd=0)
+        self.lblLogo.pack(fill=BOTH,expand=True)
+        self.lblLogo.bind("<Button-1>",self.pressedStart)
+        self.lblLogo.bind("<B1-Motion>",lambda e: self.movetomouse(e,self.d))
+        if not self.titulojanela:
+            self.frmtitle.bind("<Button-1>",self.pressedStart)
+            self.frmtitle.bind("<B1-Motion>",lambda e: self.movetomouse(e,self.d))
 
-        font_ = ("Helvetica",18,"bold")
-        self.lblLogo = Label(self.frmlogo, text=self.titulojanela,relief=SOLID,justify=CENTER,background="white",font=font_,foreground="Blue",height=4,bd="0p")
-        self.lblLogo.pack(side=LEFT,fill=X,expand=True,pady=("0p","9p"))
-
-        #self.frmclose = Frame(self.frmTOP,background="white",border="0p",width="0p",padx="0p",height=4)
-        #self.frmclose.pack(side=RIGHT,fill=X,expand=True,padx=("20p","0p"),pady=("0p","20p"))
-
-        self.frmHeader = Frame(self,background="#F8F8FF",height="600p",padx="0p",pady="0p") ##F8F8FF  #E0FFFF
+        self.frmHeader = Frame(self,background="#F8F8FF") ##F8F8FF  #E0FFFF
         self.frmHeader.pack(side=TOP,fill=BOTH,expand=True,pady=("0p","0p"))
 
-        self.frmTOP.bind("<Map>",self.to_overrideredirect) 
+        self.frmTOP.bind("<Map>",self.to_overrideredirect)
+        self.__allkw()
+    def __allkw(self):
+        self.obj = {
+            "self":self,
+            "frmTOP":self.frmTOP,
+            "btnClose":self.btnClose,
+            "btnminimizar":self.btnminimizar,
+            "frmtitle":self.frmtitle,
+            "lbllogo":self.lblLogo,
+            "frmHeader":self.frmHeader
+        }
     def pressedStart(self,event):
         self.x = event.x
         self.y = event.y
@@ -80,6 +90,51 @@ class BaseToplevel(Toplevel):
         y= (event.y_root - self.y - self.winfo_rooty()+self.winfo_rooty())
         #print(x,y)
         self.geometry(f"{dimensao[0]}x{dimensao[1]}+{x}+{y}")
+    def config_all(self,obj:str,**kw):
+        """
+        chaves descritas como obj:
+        self,
+        frmTOP,
+        btnClose,
+        btnminimizar,
+        frmtitle,
+        lbllogo,
+        frmHeader
+        """
+        self.obj[obj].configure(**kw)
+        return self.obj[obj]
+class ScrollHorizontal(Frame):
+    def __init__(self,master,heigth_=40,width_=560,root:Tk=None,**kwargs):
+        super().__init__(master,**kwargs)
+        self.root = root
+        self.flagRolarScroll = False
+        self.cv = Canvas(self,height=heigth_,width=width_)
+        self.conteiner = Frame(self.cv)
+
+        self.scrllHorizontal = Scrollbar(self,orient="horizontal",command=self.cv.xview,relief=SOLID,bd=1)
+        self.scrllHorizontal.pack(side=BOTTOM,fill=X)
+        
+        self.conteiner.bind("<Configure>",lambda e: self.cv.configure(scrollregion=self.cv.bbox("all")))
+        self.cv.configure(xscrollcommand=self.scrllHorizontal.set)
+
+        item = self.itemConteiner = self.cv.create_window(0,0,window=self.conteiner,anchor=NW)
+        
+        if self.root:
+            self.root.bind("<MouseWheel>",self.__mousewheel,add="+")
+            self.bind("<Enter>",lambda e: self.__flagRolarScroll(True))
+            self.bind("<Leave>",lambda e: self.__flagRolarScroll(False))
+            
+        self.cv.pack()
+    def __mousewheel(self,event:Event):
+        if self.flagRolarScroll:
+            value = int(-1*(event.delta/120))
+            self.cv.xview_scroll(value,"units")
+        #print(value)
+    def __flagRolarScroll(self,flag:bool):
+        print(flag)
+        self.flagRolarScroll = flag       
+    def updatemousewheel(self,event):
+        self.__mousewheel(event)
 class FrameScrollVert(Frame):
     def __init__(self,master,width_,height_,root=None,**kwargs) -> None:
         super(FrameScrollVert,self).__init__(master,**kwargs)
